@@ -6,13 +6,11 @@ import 'add_task_page.dart';
 import 'task_tile.dart';
 
 class ToDoListPage extends StatefulWidget {
-
   @override
   State<ToDoListPage> createState() => _ToDoListPageState();
 }
 
 class _ToDoListPageState extends State<ToDoListPage> {
-  
   final FirebaseFirestore database = FirebaseFirestore.instance;
 
   final List<Task> todoList = [];
@@ -24,13 +22,12 @@ class _ToDoListPageState extends State<ToDoListPage> {
   }
 
   Future _refreshToDoList() async {
-
     try {
-        var results = await database.collection("Tasks").get();
-        todoList.clear();
-        for (var doc in results.docs) {
-          todoList.add(Task.convertFromMap(doc.id, doc.data()));
-        }
+      var results = await database.collection("Tasks").get();
+      todoList.clear();
+      for (var doc in results.docs) {
+        todoList.add(Task.convertFromMap(doc.id, doc.data()));
+      }
     } catch (e) {
       if (e is FirebaseException) {
         // Handle FirebaseException here
@@ -46,10 +43,9 @@ class _ToDoListPageState extends State<ToDoListPage> {
 
   Future _addTask(Task newTask) async {
     try {
-      database
-      .collection("Tasks")
-      .add(Task.convertToMap(newTask))
-      .then((doc) {_refreshToDoList();});    
+      database.collection("Tasks").add(Task.convertToMap(newTask)).then((doc) {
+        _refreshToDoList();
+      });
     } catch (e) {
       if (e is FirebaseException) {
         // Handle FirebaseException here
@@ -59,26 +55,30 @@ class _ToDoListPageState extends State<ToDoListPage> {
         rethrow;
       }
     }
-
   }
 
-  _checkTask(String id, bool newStatus) async {
-    database.collection("Tasks").doc(id)
-    .update({"status": newStatus.toString()})
-    .then((doc) {_refreshToDoList();});
-  }
-
-  _deleteTask(String id) async {
+  Future<void> _checkTask(String id, bool newStatus) async {
     database
-    .collection("Tasks").doc(id)
-    .delete()
-    .then((doc) {_refreshToDoList();});
+        .collection("Tasks")
+        .doc(id)
+        .update({"status": newStatus.toString()}).then((doc) {
+      _refreshToDoList();
+    });
+  }
+
+  Future<void> _deleteTask(String id) async {
+    database.collection("Tasks").doc(id).delete().then((doc) {
+      _refreshToDoList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Ma TODO List"), backgroundColor: Colors.blue,),
+      appBar: AppBar(
+        title: Text("Ma TODO List"),
+        backgroundColor: Colors.blue,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView.builder(
@@ -86,7 +86,7 @@ class _ToDoListPageState extends State<ToDoListPage> {
           itemBuilder: (context, index) {
             final Task task = todoList[index];
             return TaskTile(
-              task: task, 
+              task: task,
               onDelete: (id) => _deleteTask(id),
               onChecked: (id, newStatus) => _checkTask(id, newStatus),
             );
@@ -95,10 +95,10 @@ class _ToDoListPageState extends State<ToDoListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () async {  
-          Task newTask = await Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => AddTaskPage())
-          ) as Task;
+        onPressed: () async {
+          Task newTask = await Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => AddTaskPage()))
+              as Task;
           _addTask(newTask);
         },
       ),
