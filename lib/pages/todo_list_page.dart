@@ -22,23 +22,12 @@ class _ToDoListPageState extends State<ToDoListPage> {
   }
 
   Future _refreshToDoList() async {
-    try {
-      var results = await database.collection("Tasks").get();
-      todoList.clear();
-      for (var doc in results.docs) {
-        todoList.add(Task.convertFromMap(doc.id, doc.data()));
-      }
-    } catch (e) {
-      if (e is FirebaseException) {
-        // Handle FirebaseException here
-        print(e.message);
-      } else {
-        // Re-throw the exception if it's not a FirebaseException
-        rethrow;
-      }
+    var results = await database.collection("Tasks").get();
+    todoList.clear();
+    for (var doc in results.docs) {
+      todoList.add(Task.convertFromMap(doc.id, doc.data()));
     }
-
-    setState(() {});
+    setState(() {});  
   }
 
   Future _addTask(Task newTask) async {
@@ -88,7 +77,7 @@ class _ToDoListPageState extends State<ToDoListPage> {
             return TaskTile(
               task: task,
               onDelete: (id) => _deleteTask(id),
-              onChecked: (id, newStatus) => _checkTask(id, newStatus),
+              onChecked: () => _refreshToDoList(),
             );
           },
         ),
